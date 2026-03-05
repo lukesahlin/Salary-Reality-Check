@@ -17,7 +17,7 @@ export default function App() {
 
   // Load cities.json
   useEffect(() => {
-    fetch('/data/cities.json')
+    fetch(`${import.meta.env.BASE_URL}data/cities.json`)
       .then(r => r.json())
       .then(data => {
         setCities(data)
