@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ink: #0f0f0f;
+  --color-paper: #fafaf7;
+  --color-muted: #6b6560;
+  --color-accent: #c0392b;
+  --color-gold: #b8922a;
+  --color-rule: rgba(15, 15, 15, 0.1);
+
+  /* Chart colors */
+  --chart-west: #2c6fad;
+  --chart-northeast: #c0392b;
+  --chart-south: #d4883a;
+  --chart-midwest: #4a9c6d;
+  --chart-federal: #e74c3c;
+  --chart-state: #e67e22;
+  --chart-fica: #f39c12;
+  --chart-rent: #8e44ad;
+  --chart-residual: #27ae60;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Fira Code', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Chapter layout */
+.chapter-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.chapter-sticky {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.steps-container {
+  padding: 0 48px;
+}
+
+.scroll-step {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 40vh 0;
+}
+
+.text-panel {
+  max-width: 420px;
+}
+
+.text-panel h2 {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  color: var(--color-ink);
+}
+
+.text-panel p {
+  font-size: 15px;
+  color: var(--color-muted);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+/* D3 chart styles */
+.chart-svg text {
+  font-family: var(--font-body);
+  fill: var(--color-ink);
+}
+
+.axis-tick text {
+  font-size: 11px;
+  fill: var(--color-muted);
+}
+
+.axis-line {
+  stroke: var(--color-rule);
+}
+
+/* Focus rings */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Visually hidden (for screen readers) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mobile: stepper layout */
+@media (max-width: 767px) {
+  .chapter-container {
+    grid-template-columns: 1fr;
+  }
+  .chapter-sticky {
+    position: relative;
+    top: 0;
+    height: 55vw;
+    min-height: 280px;
+  }
+  .steps-container {
+    padding: 0 16px;
+  }
+  .scroll-step {
+    min-height: unset;
+    padding: 24px 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .chart-svg text {
+    font-size: 10px;
+  }
+}

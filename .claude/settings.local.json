@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat -n \"l:/Data Analytics & Communication/personal-project/agent_build.md\")",
+      "Bash(ls \"l:/Data Analytics & Communication/personal-project/\")",
+      "Bash(wc -c \"l:/Data Analytics & Communication/personal-project/agent_build.md\")",
+      "Bash(xxd \"l:/Data Analytics & Communication/personal-project/agent_build.md\")",
+      "Bash(python3 -c \":*)",
+      "WebFetch(domain:www.zillow.com)"
+    ]
+  }
+}
