@@ -25,6 +25,16 @@ jobs:
           node-version: 22
           cache: npm
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pandas openpyxl rapidfuzz beautifulsoup4 lxml
+
+      - name: Generate city data
+        run: python scripts/download_data.py
+
       - name: Install dependencies
         run: npm ci
 
