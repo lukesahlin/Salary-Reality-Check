@@ -12,8 +12,7 @@ __pycache__/
 venv/
 *.pyc
 
-# Data files (downloaded by script)
-public/data/cities.json
+# Data files (downloaded by script — commit public/data/cities.json for deployment)
 data/raw/
 
 # Environment
