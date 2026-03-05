@@ -2,6 +2,9 @@
 
 A scrollytelling data visualization that shows what your salary actually buys across 50 US metro areas — after taxes, rent, and cost of living.
 
+# Github Pages Link
+<https://lukesahlin.github.io/Salary-Reality-Check/>
+
 ## What it does
 
 Enter your occupation and salary. The app walks you through four chapters:
