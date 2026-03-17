@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import * as d3 from 'd3'
 import { useScrollama } from '../hooks/useScrollama.js'
 import { useUserProfile } from '../hooks/useUserProfile.jsx'
@@ -24,9 +24,12 @@ export default function Chapter1({ cities, occupationLabel }) {
 
   // Filter cities that have salary data for this occupation
   const occCode = state.occupation?.code
-  const chartCities = cities
-    .filter(c => c.salaries?.[occCode])
-    .sort((a, b) => b.salaries[occCode] - a.salaries[occCode])
+  const chartCities = useMemo(() =>
+    cities
+      .filter(c => c.salaries?.[occCode])
+      .sort((a, b) => b.salaries[occCode] - a.salaries[occCode]),
+    [cities, occCode]
+  )
 
   useEffect(() => {
     if (currentStep >= 0 && !animated) setAnimated(true)

@@ -43,7 +43,7 @@ export default function Tooltip({ visible, x, y, content }) {
         <div key={i} className="flex justify-between gap-6 py-0.5">
           <span className="text-[#aaa] text-xs">{row.label}</span>
           <span className={`font-mono text-xs font-medium ${row.negative ? 'text-[#e74c3c]' : 'text-[#fafaf7]'}`}>
-            {row.negative ? '-' : ''}{fmt(Math.abs(row.value))}
+            {row.isText ? row.value : `${row.negative ? '-' : ''}${fmt(Math.abs(row.value))}`}
           </span>
         </div>
       ))}
@@ -52,7 +52,7 @@ export default function Tooltip({ visible, x, y, content }) {
       )}
       {/* Screen-reader duplicate */}
       <span className="sr-only">
-        {content.city}: {content.rows?.map(r => `${r.label} ${fmt(r.value)}`).join(', ')}
+        {content.city}: {content.rows?.map(r => `${r.label} ${r.isText ? r.value : fmt(r.value)}`).join(', ')}
       </span>
     </div>,
     document.body

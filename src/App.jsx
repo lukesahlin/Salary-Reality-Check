@@ -44,6 +44,32 @@ export default function App() {
 
   const salaryFor = useCallback((city) => getCitySalary(state, city), [state])
 
+  // Arrow key navigation through scroll steps
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return
+      if (!['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(e.key)) return
+      e.preventDefault()
+      const all = Array.from(document.querySelectorAll('.scroll-step'))
+      if (!all.length) return
+      const forward = e.key === 'ArrowDown' || e.key === 'ArrowRight'
+      // Get absolute top of each step using getBoundingClientRect + scrollY
+      const viewMid = window.scrollY + window.innerHeight * 0.5
+      const tops = all.map(el => el.getBoundingClientRect().top + window.scrollY)
+      const current = tops.reduce((bestIdx, top, i) => {
+        const mid = top + all[i].offsetHeight / 2
+        const bestMid = tops[bestIdx] + all[bestIdx].offsetHeight / 2
+        return Math.abs(mid - viewMid) < Math.abs(bestMid - viewMid) ? i : bestIdx
+      }, 0)
+      const nextIdx = forward ? current + 1 : current - 1
+      if (nextIdx >= 0 && nextIdx < all.length) {
+        all[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fafaf7] flex items-center justify-center">
