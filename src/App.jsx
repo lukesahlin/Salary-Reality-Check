@@ -56,6 +56,14 @@ export default function App() {
       // Get absolute top of each step using getBoundingClientRect + scrollY
       const viewMid = window.scrollY + window.innerHeight * 0.5
       const tops = all.map(el => el.getBoundingClientRect().top + window.scrollY)
+      const chapter4 = document.getElementById('chapter4')
+      const chapter4Top = chapter4 ? chapter4.getBoundingClientRect().top + window.scrollY : Infinity
+      // If we're in Chapter 4 (scrolled past all steps)
+      const inChapter4 = window.scrollY + window.innerHeight * 0.3 >= chapter4Top
+      if (inChapter4) {
+        if (!forward) all[all.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
       const current = tops.reduce((bestIdx, top, i) => {
         const mid = top + all[i].offsetHeight / 2
         const bestMid = tops[bestIdx] + all[bestIdx].offsetHeight / 2
@@ -64,6 +72,8 @@ export default function App() {
       const nextIdx = forward ? current + 1 : current - 1
       if (nextIdx >= 0 && nextIdx < all.length) {
         all[nextIdx].scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else if (forward && nextIdx >= all.length) {
+        chapter4?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
     window.addEventListener('keydown', handleKey)

@@ -169,7 +169,7 @@ export default function Chapter3({ cities, salaryFor }) {
 
   return (
     <section id="chapter3" style={{ position: 'relative' }}>
-      <div className="chapter-container">
+      <div className="chapter-container" style={{ minHeight: 'auto' }}>
         {/* Sticky chart */}
         <div className="chapter-sticky bg-[#fafaf7] flex flex-col justify-center px-4 py-4">
           {/* Legend */}
@@ -188,7 +188,7 @@ export default function Chapter3({ cities, salaryFor }) {
 
         {/* Scrolling text */}
         <div className="steps-container">
-          <div className="ch3-step scroll-step">
+          <div className="ch3-step scroll-step" style={{ minHeight: 'auto', paddingBottom: '10vh' }}>
             <div className="text-panel">
               <p className="font-mono text-xs tracking-widest uppercase text-[#c0392b] mb-3">Chapter 3</p>
               <h2>The leaderboard just flipped.</h2>
