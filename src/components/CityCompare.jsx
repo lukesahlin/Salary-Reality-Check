@@ -11,7 +11,7 @@ export default function CityCompare({ cities, salaryFor }) {
 
   const bestCity = pinned.reduce((best, city) => {
     const pp = purchasingPower(salaryFor(city), city)
-    return !best || pp > purchasingPower(effectiveSalary, best) ? city : best
+    return !best || pp > purchasingPower(salaryFor(best), best) ? city : best
   }, null)
 
   if (!compareOpen) return null
