@@ -2,7 +2,7 @@ import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { cityBreakdown, fmt } from '../lib/calculations.js'
 import { purchasingPower } from '../lib/calculations.js'
 
-export default function CityCompare({ cities, effectiveSalary }) {
+export default function CityCompare({ cities, salaryFor }) {
   const [state, dispatch] = useUserProfile()
   const { pinnedCities, compareOpen } = state
 
@@ -10,7 +10,7 @@ export default function CityCompare({ cities, effectiveSalary }) {
   const available = cities.filter(c => !pinnedCities.includes(c.id))
 
   const bestCity = pinned.reduce((best, city) => {
-    const pp = purchasingPower(effectiveSalary, city)
+    const pp = purchasingPower(salaryFor(city), city)
     return !best || pp > purchasingPower(effectiveSalary, best) ? city : best
   }, null)
 
@@ -55,7 +55,7 @@ export default function CityCompare({ cities, effectiveSalary }) {
           )}
 
           {pinned.map(city => {
-            const bd = cityBreakdown(effectiveSalary, city)
+            const bd = cityBreakdown(salaryFor(city), city)
             const isBest = bestCity?.id === city.id
             return (
               <div key={city.id} className={`border rounded-sm p-4 ${isBest ? 'border-[#b8922a]' : 'border-[rgba(15,15,15,0.1)]'}`}>

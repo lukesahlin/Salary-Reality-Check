@@ -3,7 +3,7 @@ import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { OCCUPATIONS } from '../data/occupations.js'
 import { fmt } from '../lib/calculations.js'
 
-export default function Nav({ effectiveSalary }) {
+export default function Nav() {
   const [state, dispatch] = useUserProfile()
   const debounceRef = useRef(null)
 

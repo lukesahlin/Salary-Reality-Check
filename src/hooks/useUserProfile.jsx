@@ -48,13 +48,7 @@ export function useUserProfile() {
   return ctx
 }
 
-export function getEffectiveSalary(state, cities) {
-  if (state.salary) return state.salary
-  const occCode = state.occupation?.code
-  if (!occCode || !cities?.length) return 75000
-  for (const city of cities) {
-    const wage = city.salaries?.[occCode]
-    if (wage) return wage
-  }
-  return 75000
+export function getCitySalary(state, city) {
+  if (state.usingCustomSalary && state.salary) return state.salary
+  return city?.salaries?.[state.occupation?.code] || 75000
 }

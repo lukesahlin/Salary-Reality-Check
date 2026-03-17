@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useUserProfile, getEffectiveSalary } from './hooks/useUserProfile.jsx'
+import { useState, useEffect, useCallback } from 'react'
+import { useUserProfile, getCitySalary } from './hooks/useUserProfile.jsx'
 import { OCCUPATIONS } from './data/occupations.js'
 import Nav from './components/Nav.jsx'
 import Intro from './components/Intro.jsx'
@@ -42,7 +42,7 @@ export default function App() {
     if (occ || salary) setIntroComplete(true)
   }, [dispatch])
 
-  const effectiveSalary = getEffectiveSalary(state, cities)
+  const salaryFor = useCallback((city) => getCitySalary(state, city), [state])
 
   if (loading) {
     return (
@@ -76,30 +76,29 @@ export default function App() {
 
   return (
     <>
-      <Nav effectiveSalary={effectiveSalary} />
+      <Nav />
 
       <main>
         <Chapter1
           cities={cities}
-          effectiveSalary={effectiveSalary}
           occupationLabel={state.occupation?.label || 'Professional'}
         />
         <Chapter2
           cities={cities}
-          effectiveSalary={effectiveSalary}
+          salaryFor={salaryFor}
         />
         <Chapter3
           cities={cities}
-          effectiveSalary={effectiveSalary}
+          salaryFor={salaryFor}
         />
         <Chapter4
           cities={cities}
-          effectiveSalary={effectiveSalary}
+          salaryFor={salaryFor}
           occupation={state.occupation}
         />
       </main>
 
-      <CityCompare cities={cities} effectiveSalary={effectiveSalary} />
+      <CityCompare cities={cities} salaryFor={salaryFor} />
 
       {/* Footer */}
       <footer className="border-t border-[rgba(15,15,15,0.1)] py-8 px-6 mt-0">

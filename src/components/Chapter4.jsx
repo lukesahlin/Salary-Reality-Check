@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { rankCities } from '../lib/scoring.js'
 import ResultCard from './ResultCard.jsx'
 
-export default function Chapter4({ cities, effectiveSalary, occupation }) {
-  const ranked = useMemo(() => rankCities(effectiveSalary, cities), [cities, effectiveSalary])
+export default function Chapter4({ cities, salaryFor, occupation }) {
+  const ranked = useMemo(() => rankCities(salaryFor, cities), [cities, salaryFor])
 
   // Top city by gross salary for the selected occupation
   const occCode = occupation?.code
@@ -55,7 +55,7 @@ export default function Chapter4({ cities, effectiveSalary, occupation }) {
               city={city}
               rank={salaryRanked.findIndex(c => c.id === city.id) + 1}
               ppRank={ppRankMap[city.id]}
-              effectiveSalary={effectiveSalary}
+              salaryFor={salaryFor}
               topCity={topCity}
             />
           ))}

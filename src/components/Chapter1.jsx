@@ -14,7 +14,7 @@ const REGION_COLORS = {
 
 const MARGIN = { top: 10, right: 80, bottom: 30, left: 52 }
 
-export default function Chapter1({ cities, effectiveSalary, occupationLabel }) {
+export default function Chapter1({ cities, occupationLabel }) {
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: null })
@@ -125,9 +125,9 @@ export default function Chapter1({ cities, effectiveSalary, occupationLabel }) {
       labels.transition().delay((_, i) => i * 30 + 600).style('opacity', 1)
     }
 
-    // User salary line
-    if (effectiveSalary && effectiveSalary < maxVal) {
-      const lx = xScale(effectiveSalary)
+    // User salary line — only shown when a custom salary is entered
+    if (state.usingCustomSalary && state.salary && state.salary < maxVal) {
+      const lx = xScale(state.salary)
       g.append('line')
         .attr('x1', lx).attr('x2', lx)
         .attr('y1', 0).attr('y2', innerH)
@@ -162,7 +162,7 @@ export default function Chapter1({ cities, effectiveSalary, occupationLabel }) {
       })
       .on('mouseleave', () => setTooltip(t => ({ ...t, visible: false })))
 
-  }, [chartCities, occCode, animated, effectiveSalary, occupationLabel])
+  }, [chartCities, occCode, animated, state.usingCustomSalary, state.salary, occupationLabel])
 
   // Re-render on resize
   useEffect(() => {

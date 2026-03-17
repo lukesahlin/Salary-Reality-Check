@@ -2,17 +2,17 @@ import { useState } from 'react'
 import { cityBreakdown, fmt } from '../lib/calculations.js'
 import { useUserProfile } from '../hooks/useUserProfile.jsx'
 
-export default function ResultCard({ city, rank, ppRank, effectiveSalary, topCity }) {
+export default function ResultCard({ city, rank, ppRank, salaryFor, topCity }) {
   const [state, dispatch] = useUserProfile()
   const [copied, setCopied] = useState(false)
-  const bd = cityBreakdown(effectiveSalary, city)
-  const topBd = topCity ? cityBreakdown(effectiveSalary, topCity) : null
+  const bd = cityBreakdown(salaryFor(city), city)
+  const topBd = topCity ? cityBreakdown(salaryFor(topCity), topCity) : null
   const delta = topBd ? bd.pp - topBd.pp : 0
 
   const handleShare = () => {
     const params = new URLSearchParams({
       occ: state.occupation?.code || '15-1252',
-      salary: effectiveSalary,
+      salary: salaryFor(city),
       city: city.id,
     })
     const url = `${window.location.origin}${window.location.pathname}?${params}`

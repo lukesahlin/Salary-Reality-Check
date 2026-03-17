@@ -39,7 +39,7 @@ const STEP_TEXT = [
 
 const MARGIN = { top: 10, right: 20, bottom: 30, left: 52 }
 
-export default function Chapter2({ cities, effectiveSalary }) {
+export default function Chapter2({ cities, salaryFor }) {
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: null })
@@ -49,7 +49,7 @@ export default function Chapter2({ cities, effectiveSalary }) {
 
   // Prepare data
   const occData = cities.map(c => {
-    const bd = cityBreakdown(effectiveSalary, c)
+    const bd = cityBreakdown(salaryFor(c), c)
     return { ...c, ...bd }
   }).sort((a, b) => b.gross - a.gross)
 
