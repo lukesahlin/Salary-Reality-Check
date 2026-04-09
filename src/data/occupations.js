@@ -48,3 +48,4 @@ export const OCCUPATIONS = [
 export const OCCUPATION_CATEGORIES = [...new Set(OCCUPATIONS.map(o => o.category))]
 
 export const DEFAULT_OCCUPATION = '15-1252'
+

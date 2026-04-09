@@ -2,19 +2,20 @@ import { useEffect } from 'react'
 import { cityBreakdown, fmt, fmtCompact, homePriceToIncomeRatio, effectiveTaxRate } from '../lib/calculations.js'
 
 export default function CityModal({ city, salaryFor, ppRank, onClose }) {
+  // Close on Escape — hook must come before any early return
+  useEffect(() => {
+    if (!city) return
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [city, onClose])
+
   if (!city) return null
 
   const gross = salaryFor(city)
   const bd    = cityBreakdown(gross, city)
   const hpRatio = homePriceToIncomeRatio(gross, city)
   const effRate = Math.round(effectiveTaxRate(gross, city) * 100)
-
-  // Close on Escape
-  useEffect(() => {
-    const onKey = e => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
 
   // Stacked bar segments (% of gross)
   const segs = [
