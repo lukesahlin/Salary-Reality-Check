@@ -37,7 +37,7 @@ const STEP_TEXT = [
   { headline: 'This is what you actually have left.', body: 'The green bar is your real purchasing power after taxes and rent. Notice which cities have flipped.' },
 ]
 
-const MARGIN = { top: 10, right: 20, bottom: 30, left: 52 }
+const MARGIN = { top: 10, right: 20, bottom: 30, left: 48 }
 
 export default function Chapter2({ cities, salaryFor }) {
   const svgRef = useRef(null)
@@ -57,10 +57,10 @@ export default function Chapter2({ cities, salaryFor }) {
     if (!svgRef.current || !occData.length) return
 
     const el = svgRef.current
-    const width = el.clientWidth || 600
+    const width  = el.clientWidth  || 600
     const height = el.clientHeight || 500
-    const innerW = width - MARGIN.left - MARGIN.right
-    const innerH = height - MARGIN.top - MARGIN.bottom
+    const innerW = width  - MARGIN.left - MARGIN.right
+    const innerH = height - MARGIN.top  - MARGIN.bottom
 
     const activeSegs = STEP_SEGMENTS[step] || []
     const showFull = step === 0
@@ -75,7 +75,7 @@ export default function Chapter2({ cities, salaryFor }) {
     const yScale = d3.scaleBand()
       .domain(sorted.map(d => d.short))
       .range([0, innerH])
-      .padding(0.22)
+      .padding(0.18)
 
     const svg = d3.select(svgRef.current)
     const hasG = svg.select('g.main').size() > 0
@@ -108,7 +108,7 @@ export default function Chapter2({ cities, salaryFor }) {
       .call(d3.axisLeft(yScale).tickSize(0))
       .call(ax => {
         ax.select('.domain').remove()
-        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 11).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
+        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 9).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
       })
 
     g.select('.grid')

@@ -4,7 +4,7 @@ import { useScrollama } from '../hooks/useScrollama.js'
 import { purchasingPower, cityBreakdown, fmt } from '../lib/calculations.js'
 import Tooltip from './Tooltip.jsx'
 
-const MARGIN = { top: 10, right: 90, bottom: 30, left: 52 }
+const MARGIN = { top: 10, right: 72, bottom: 30, left: 48 }  // minimum pixels per city row
 
 export default function Chapter3({ cities, salaryFor }) {
   const svgRef = useRef(null)
@@ -41,17 +41,17 @@ export default function Chapter3({ cities, salaryFor }) {
     if (!svgRef.current || !ppRanked.length) return
 
     const el = svgRef.current
-    const width = el.clientWidth || 600
+    const width  = el.clientWidth  || 600
     const height = el.clientHeight || 500
-    const innerW = width - MARGIN.left - MARGIN.right
-    const innerH = height - MARGIN.top - MARGIN.bottom
+    const innerW = width  - MARGIN.left - MARGIN.right
+    const innerH = height - MARGIN.top  - MARGIN.bottom
 
     const maxPP = d3.max(ppRanked, d => purchasingPower(salaryFor(d), d)) * 1.05
     const xScale = d3.scaleLinear().domain([0, maxPP]).range([0, innerW])
     const yScale = d3.scaleBand()
       .domain(ppRanked.map(d => d.short))
       .range([0, innerH])
-      .padding(0.22)
+      .padding(0.10)
 
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
@@ -80,7 +80,7 @@ export default function Chapter3({ cities, salaryFor }) {
       .call(d3.axisLeft(yScale).tickSize(0))
       .call(ax => {
         ax.select('.domain').remove()
-        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 11).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
+        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 9).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
       })
 
     // Rank delta per city
@@ -119,29 +119,31 @@ export default function Chapter3({ cities, salaryFor }) {
       .transition().duration(1000).delay((_, i) => i * 50).ease(d3.easeCubicInOut)
       .attr('width', d => entered ? xScale(purchasingPower(salaryFor(d), d)) : 0)
 
-    // Delta badges
-    groups.append('text')
-      .attr('x', d => xScale(purchasingPower(salaryFor(d), d)) + 6)
-      .attr('y', bh / 2 + 4)
-      .attr('font-size', 9)
-      .attr('font-family', 'DM Mono, monospace')
-      .attr('fill', d => {
-        const sr = salaryRankMap[d.id] || 99
-        const pr = ppRankMap[d.id] || 99
-        if (pr < sr) return '#27ae60'
-        if (pr > sr) return '#e74c3c'
-        return '#999'
-      })
-      .text(d => {
-        const sr = salaryRankMap[d.id] || ppRankMap[d.id]
-        const pr = ppRankMap[d.id]
-        const delta = sr - pr
-        if (delta > 0) return `▲${delta}`
-        if (delta < 0) return `▼${Math.abs(delta)}`
-        return '–'
-      })
-      .style('opacity', 0)
-      .transition().delay(1200).style('opacity', 1)
+    // Delta badges — only when bars are tall enough to avoid overlap
+    if (bh >= 10) {
+      groups.append('text')
+        .attr('x', d => xScale(purchasingPower(salaryFor(d), d)) + 4)
+        .attr('y', bh / 2 + 3)
+        .attr('font-size', Math.min(9, bh - 2))
+        .attr('font-family', 'DM Mono, monospace')
+        .attr('fill', d => {
+          const sr = salaryRankMap[d.id] || 99
+          const pr = ppRankMap[d.id] || 99
+          if (pr < sr) return '#27ae60'
+          if (pr > sr) return '#e74c3c'
+          return '#999'
+        })
+        .text(d => {
+          const sr = salaryRankMap[d.id] || ppRankMap[d.id]
+          const pr = ppRankMap[d.id]
+          const delta = sr - pr
+          if (delta > 0) return `▲${delta}`
+          if (delta < 0) return `▼${Math.abs(delta)}`
+          return '–'
+        })
+        .style('opacity', 0)
+        .transition().delay(1200).style('opacity', 1)
+    }
 
     // Tooltip
     groups

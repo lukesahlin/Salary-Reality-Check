@@ -1,8 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { rankCities } from '../lib/scoring.js'
 import ResultCard from './ResultCard.jsx'
+import CityModal from './CityModal.jsx'
 
 export default function Chapter4({ cities, salaryFor, occupation }) {
+  const [search, setSearch] = useState('')
+  const [selectedCity, setSelectedCity] = useState(null)
   const ranked = useMemo(() => rankCities(salaryFor, cities), [cities, salaryFor])
 
   // Top city by gross salary for the selected occupation
@@ -63,32 +66,55 @@ export default function Chapter4({ cities, salaryFor, occupation }) {
 
         {/* Full ranking summary */}
         <div className="border-t border-[rgba(15,15,15,0.1)] pt-12">
-          <h3
-            className="font-bold text-[#0f0f0f] mb-6"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 22 }}
-          >
-            Full purchasing power ranking
-          </h3>
-          <div className="space-y-2">
-            {ranked.slice(0, 15).map(({ city, pp }, i) => (
-              <div
-                key={city.id}
-                className="flex items-center gap-4 py-2 border-b border-[rgba(15,15,15,0.06)] hover:bg-white px-3 transition-colors"
-              >
-                <span className="w-6 text-right font-mono text-xs text-[#aaa]">{i + 1}</span>
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-[#0f0f0f]">{city.name}</span>
-                  <span className="ml-2 text-xs text-[#aaa] font-mono">{city.region}</span>
-                </div>
-                <span className="font-mono text-sm text-[#27ae60] font-semibold">
-                  ${Math.round(pp / 1000)}k
-                </span>
-                {i < 5 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#b8922a]" aria-label="Top 5" />
-                )}
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+            <h3
+              className="font-bold text-[#0f0f0f]"
+              style={{ fontFamily: 'var(--font-display)', fontSize: 22 }}
+            >
+              Full purchasing power ranking
+            </h3>
+            <input
+              type="search"
+              placeholder="Search cities…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border border-[rgba(15,15,15,0.15)] bg-white px-3 py-1.5 text-sm font-mono text-[#0f0f0f] placeholder-[#aaa] focus:outline-none focus:border-[#0f0f0f] w-48"
+              aria-label="Search cities in ranking"
+            />
           </div>
+          <div className="space-y-2">
+            {ranked
+              .filter(({ city }) =>
+                !search || city.name.toLowerCase().includes(search.toLowerCase())
+              )
+              .map(({ city, pp }) => {
+                const globalRank = ppRankMap[city.id]
+                return (
+                  <button
+                    key={city.id}
+                    onClick={() => setSelectedCity(city)}
+                    className="w-full flex items-center gap-4 py-2 border-b border-[rgba(15,15,15,0.06)] hover:bg-white px-3 transition-colors text-left group"
+                  >
+                    <span className="w-6 text-right font-mono text-xs text-[#aaa]">{globalRank}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-[#0f0f0f] group-hover:text-[#c0392b] transition-colors">{city.name}</span>
+                      <span className="ml-2 text-xs text-[#aaa] font-mono">{city.region}</span>
+                    </div>
+                    <span className="font-mono text-sm text-[#27ae60] font-semibold">
+                      ${Math.round(pp / 1000)}k
+                    </span>
+                    {globalRank <= 5 && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#b8922a] flex-shrink-0" aria-label="Top 5" />
+                    )}
+                    <span className="text-xs text-[#aaa] font-mono opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">→</span>
+                  </button>
+                )
+              })
+            }
+          </div>
+          {search && ranked.filter(({ city }) => city.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+            <p className="text-sm text-[#aaa] font-mono py-4">No cities match "{search}"</p>
+          )}
         </div>
 
         {/* Data note */}
@@ -98,6 +124,15 @@ export default function Chapter4({ cities, salaryFor, occupation }) {
           Estimates are approximate and do not account for all individual circumstances.
         </p>
       </div>
+
+      {selectedCity && (
+        <CityModal
+          city={selectedCity}
+          salaryFor={salaryFor}
+          ppRank={ppRankMap[selectedCity.id]}
+          onClose={() => setSelectedCity(null)}
+        />
+      )}
     </section>
   )
 }

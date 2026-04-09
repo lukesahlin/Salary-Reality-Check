@@ -12,7 +12,7 @@ const REGION_COLORS = {
   Midwest: '#4a9c6d',
 }
 
-const MARGIN = { top: 10, right: 80, bottom: 30, left: 52 }
+const MARGIN = { top: 10, right: 64, bottom: 30, left: 48 }
 
 export default function Chapter1({ cities, occupationLabel }) {
   const svgRef = useRef(null)
@@ -39,10 +39,10 @@ export default function Chapter1({ cities, occupationLabel }) {
     if (!svgRef.current || !chartCities.length) return
 
     const el = svgRef.current
-    const width = el.clientWidth || 600
+    const width  = el.clientWidth  || 600
     const height = el.clientHeight || 500
-    const innerW = width - MARGIN.left - MARGIN.right
-    const innerH = height - MARGIN.top - MARGIN.bottom
+    const innerW = width  - MARGIN.left - MARGIN.right
+    const innerH = height - MARGIN.top  - MARGIN.bottom
 
     const svg = d3.select(el)
     svg.selectAll('*').remove()
@@ -55,7 +55,7 @@ export default function Chapter1({ cities, occupationLabel }) {
     const yScale = d3.scaleBand()
       .domain(chartCities.map(d => d.short))
       .range([0, innerH])
-      .padding(0.22)
+      .padding(0.10)
 
     // Axes
     g.append('g')
@@ -75,7 +75,7 @@ export default function Chapter1({ cities, occupationLabel }) {
       .call(d3.axisLeft(yScale).tickSize(0))
       .call(ax => {
         ax.select('.domain').remove()
-        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 11).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
+        ax.selectAll('text').attr('fill', '#0f0f0f').attr('font-size', 9).attr('font-family', 'DM Sans, sans-serif').attr('dx', -4)
       })
 
     // Grid lines
@@ -111,21 +111,24 @@ export default function Chapter1({ cities, occupationLabel }) {
         .attr('width', d => xScale(d.salaries[occCode]))
     }
 
-    // Value labels
-    const labels = g.selectAll('.bar-label')
-      .data(chartCities, d => d.id)
-      .join('text')
-      .attr('class', 'bar-label')
-      .attr('x', d => xScale(d.salaries[occCode]) + 6)
-      .attr('y', d => yScale(d.short) + yScale.bandwidth() / 2 + 4)
-      .attr('font-size', 10)
-      .attr('fill', '#6b6560')
-      .attr('font-family', 'DM Mono, monospace')
-      .text(d => `$${Math.round(d.salaries[occCode] / 1000)}k`)
-      .style('opacity', animated ? 1 : 0)
+    // Value labels — only render when bars are tall enough to avoid overlap
+    const bw = yScale.bandwidth()
+    if (bw >= 11) {
+      const labels = g.selectAll('.bar-label')
+        .data(chartCities, d => d.id)
+        .join('text')
+        .attr('class', 'bar-label')
+        .attr('x', d => xScale(d.salaries[occCode]) + 4)
+        .attr('y', d => yScale(d.short) + bw / 2 + 3)
+        .attr('font-size', Math.min(9, bw - 2))
+        .attr('fill', '#6b6560')
+        .attr('font-family', 'DM Mono, monospace')
+        .text(d => `$${Math.round(d.salaries[occCode] / 1000)}k`)
+        .style('opacity', animated ? 1 : 0)
 
-    if (animated) {
-      labels.transition().delay((_, i) => i * 30 + 600).style('opacity', 1)
+      if (animated) {
+        labels.transition().delay((_, i) => i * 30 + 600).style('opacity', 1)
+      }
     }
 
     // User salary line — only shown when a custom salary is entered
