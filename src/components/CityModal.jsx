@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { cityBreakdown, fmt, fmtCompact, homePriceToIncomeRatio, effectiveTaxRate } from '../lib/calculations.js'
+import { cityBreakdown, fmt, fmtCompact, homePriceToIncomeRatio, effectiveTaxRate, stateEffectiveRate } from '../lib/calculations.js'
 
 export default function CityModal({ city, salaryFor, ppRank, onClose }) {
   // Close on Escape — hook must come before any early return
@@ -146,8 +146,7 @@ export default function CityModal({ city, salaryFor, ppRank, onClose }) {
               <Metric label="Sunny Days / Year" value={city.sunDaysPerYear} />}
             {city.avgBenefitsValue != null &&
               <Metric label="Avg. Benefits Value" value={fmt(city.avgBenefitsValue)} />}
-            {city.stateTaxRate != null &&
-              <Metric label="State Tax Rate" value={`${(city.stateTaxRate * 100).toFixed(1)}%`} />}
+            <Metric label="State Tax Rate (eff.)" value={`${(stateEffectiveRate(gross, city.state) * 100).toFixed(1)}%`} />
           </div>
         </div>
 
