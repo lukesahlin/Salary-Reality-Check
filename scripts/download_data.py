@@ -197,9 +197,48 @@ HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/122.0.0.0 Safari/537.36"
-    )
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
 }
+
+
+def _make_session():
+    """Return a requests.Session that looks like a browser to BLS."""
+    s = requests.Session()
+    s.headers.update(HEADERS)
+    return s
+
+
+def _get_with_retry(session, url, *, referer=None, timeout=120, retries=3):
+    """GET with exponential backoff. Raises on final failure."""
+    if referer:
+        session.headers.update({"Referer": referer})
+    for attempt in range(1, retries + 1):
+        try:
+            r = session.get(url, timeout=timeout)
+            r.raise_for_status()
+            return r
+        except requests.HTTPError as e:
+            if attempt == retries or e.response.status_code in (404, 410):
+                raise
+            wait = 2 ** attempt
+            print(f"  WARNING: {e} — retrying in {wait}s (attempt {attempt}/{retries})")
+            time.sleep(wait)
+        except requests.RequestException as e:
+            if attempt == retries:
+                raise
+            wait = 2 ** attempt
+            print(f"  WARNING: {e} — retrying in {wait}s (attempt {attempt}/{retries})")
+            time.sleep(wait)
+
 
 # ── SECTION 1: BLS OEWS ───────────────────────────────────────────────────────
 
@@ -210,10 +249,18 @@ def download_bls():
         print("  [BLS] MSA_M2024_dl.xlsx already exists, skipping download.")
         return
 
+    session = _make_session()
+
+    # Warm up: visit the BLS OES tables page first to get a session cookie
+    try:
+        session.get("https://www.bls.gov/oes/tables.htm", timeout=20)
+        time.sleep(1.5)
+    except Exception:
+        pass  # best-effort warm-up
+
     url = "https://www.bls.gov/oes/special.requests/oesm24ma.zip"
     print(f"  [BLS] Downloading {url} (~50 MB) ...")
-    r = requests.get(url, headers=HEADERS, timeout=120)
-    r.raise_for_status()
+    r = _get_with_retry(session, url, referer="https://www.bls.gov/oes/tables.htm", timeout=180)
 
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall("data/raw/bls/")
@@ -281,8 +328,7 @@ def download_zillow_zori():
 
     url = "https://files.zillowstatic.com/research/public_csvs/zori/Metro_zori_uc_sfrcondomfr_sm_month.csv"
     print(f"  [Zillow ZORI] Downloading {url} ...")
-    r = requests.get(url, headers=HEADERS, timeout=30)
-    r.raise_for_status()
+    r = _get_with_retry(_make_session(), url, timeout=60)
 
     with open(csv_path, "w", encoding="utf-8") as f:
         f.write(r.text)
@@ -332,8 +378,7 @@ def download_zillow_zhvi():
 
     url = "https://files.zillowstatic.com/research/public_csvs/zhvi/Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv"
     print(f"  [Zillow ZHVI] Downloading {url} ...")
-    r = requests.get(url, headers=HEADERS, timeout=30)
-    r.raise_for_status()
+    r = _get_with_retry(_make_session(), url, timeout=60)
 
     with open(csv_path, "w", encoding="utf-8") as f:
         f.write(r.text)

@@ -29,11 +29,24 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache raw data files
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-data-${{ hashFiles('scripts/download_data.py') }}
+          restore-keys: raw-data-
+
       - name: Install Python dependencies
         run: pip install requests pandas openpyxl rapidfuzz beautifulsoup4 lxml
 
       - name: Generate city data
-        run: python scripts/download_data.py
+        run: |
+          if [ -f public/data/cities.json ]; then
+            echo "cities.json already present — skipping data download."
+          else
+            echo "cities.json missing — running data pipeline..."
+            python scripts/download_data.py
+          fi
 
       - name: Install dependencies
         run: npm ci
