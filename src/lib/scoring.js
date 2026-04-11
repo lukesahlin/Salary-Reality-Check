@@ -1,10 +1,10 @@
 import { purchasingPower, homePriceToIncomeRatio } from './calculations.js'
 
 /**
- * Rank cities purely by purchasing power (existing behavior, unchanged).
+ * Rank cities purely by purchasing power.
  */
-export function rankCities(salaryFor, cities) {
-  const scores = cities.map(c => ({ city: c, pp: purchasingPower(salaryFor(c), c) }))
+export function rankCities(salaryFor, cities, housingMode = 'rent') {
+  const scores = cities.map(c => ({ city: c, pp: purchasingPower(salaryFor(c), c, housingMode) }))
   return scores.sort((a, b) => b.pp - a.pp)
 }
 
@@ -20,8 +20,8 @@ export function rankCities(salaryFor, cities) {
  *
  * All sub-scores are normalized 0–1 across the provided city set before weighting.
  */
-export function cityScore(grossIncome, city, allCities) {
-  const fin   = _financialScore(grossIncome, city, allCities)
+export function cityScore(grossIncome, city, allCities, housingMode = 'rent') {
+  const fin   = _financialScore(grossIncome, city, allCities, housingMode)
   const jobs  = _jobMarketScore(city, allCities)
   const walk  = _walkabilityScore(city)
   const safe  = _safetyScore(city, allCities)
@@ -35,12 +35,12 @@ export function cityScore(grossIncome, city, allCities) {
  * Rank cities by composite score.
  * Returns array of { city, score, pp, breakdown } sorted descending.
  */
-export function rankCitiesByScore(salaryFor, cities) {
+export function rankCitiesByScore(salaryFor, cities, housingMode = 'rent') {
   return cities
     .map(c => {
       const gross = salaryFor(c)
-      const pp    = purchasingPower(gross, c)
-      const score = cityScore(gross, c, cities)
+      const pp    = purchasingPower(gross, c, housingMode)
+      const score = cityScore(gross, c, cities, housingMode)
       return { city: c, score, pp }
     })
     .sort((a, b) => b.score - a.score)
@@ -48,9 +48,9 @@ export function rankCitiesByScore(salaryFor, cities) {
 
 // ── Sub-scorers ───────────────────────────────────────────────────────────────
 
-function _financialScore(grossIncome, city, allCities) {
-  const pp = purchasingPower(grossIncome, city)
-  const allPP = allCities.map(c => purchasingPower(grossIncome, c))
+function _financialScore(grossIncome, city, allCities, housingMode = 'rent') {
+  const pp = purchasingPower(grossIncome, city, housingMode)
+  const allPP = allCities.map(c => purchasingPower(grossIncome, c, housingMode))
   const ppScore = _normalize(pp, Math.min(...allPP), Math.max(...allPP))
 
   const hpRatio = homePriceToIncomeRatio(grossIncome, city)

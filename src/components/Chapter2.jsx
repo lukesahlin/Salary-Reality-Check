@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { useScrollama } from '../hooks/useScrollama.js'
+import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { cityBreakdown, fmt } from '../lib/calculations.js'
 import Tooltip from './Tooltip.jsx'
 
@@ -12,11 +13,18 @@ const SEG_COLORS = {
   residual: '#27ae60',
 }
 
-const SEG_LABELS = {
+const SEG_LABELS_RENT = {
   fedTax: 'Federal Tax',
-  stTax: 'State Tax',
-  fica: 'FICA',
-  rent: 'Rent',
+  stTax:  'State Tax',
+  fica:   'FICA',
+  rent:   'Rent',
+  residual: 'Take-Home',
+}
+const SEG_LABELS_BUY = {
+  fedTax: 'Federal Tax',
+  stTax:  'State Tax',
+  fica:   'FICA',
+  rent:   'Mortgage+Tax',
   residual: 'Take-Home',
 }
 
@@ -44,12 +52,16 @@ export default function Chapter2({ cities, salaryFor }) {
   const containerRef = useRef(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: null })
   const { currentStep } = useScrollama('.ch2-step', 0.5)
+  const [state] = useUserProfile()
+  const housingMode = state.housingMode
+
+  const SEG_LABELS = housingMode === 'buy' ? SEG_LABELS_BUY : SEG_LABELS_RENT
 
   const step = Math.max(0, Math.min(currentStep, 4))
 
   // Prepare data
   const occData = cities.map(c => {
-    const bd = cityBreakdown(salaryFor(c), c)
+    const bd = cityBreakdown(salaryFor(c), c, housingMode)
     return { ...c, ...bd }
   }).sort((a, b) => b.gross - a.gross)
 
@@ -192,7 +204,7 @@ export default function Chapter2({ cities, salaryFor }) {
       })
       .on('mouseleave', () => setTooltip(t => ({ ...t, visible: false })))
 
-  }, [occData, step])
+  }, [occData, step, SEG_LABELS])
 
   const stepInfo = STEP_TEXT[step] || STEP_TEXT[0]
 

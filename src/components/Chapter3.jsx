@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import * as d3 from 'd3'
 import { useScrollama } from '../hooks/useScrollama.js'
+import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { purchasingPower, cityBreakdown, fmt } from '../lib/calculations.js'
 import Tooltip from './Tooltip.jsx'
 
@@ -12,6 +13,8 @@ export default function Chapter3({ cities, salaryFor }) {
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: null })
   const [entered, setEntered] = useState(false)
   const { currentStep } = useScrollama('.ch3-step', 0.55)
+  const [state] = useUserProfile()
+  const housingMode = state.housingMode
 
   useEffect(() => {
     if (currentStep >= 0 && !entered) setEntered(true)
@@ -21,21 +24,21 @@ export default function Chapter3({ cities, salaryFor }) {
   const salaryRanked = useMemo(() => {
     const occCode = cities[0]?.salaries ? Object.keys(cities[0].salaries)[0] : null
     return [...cities]
-      .filter(c => purchasingPower(salaryFor(c), c) > 0)
+      .filter(c => purchasingPower(salaryFor(c), c, housingMode) > 0)
       .sort((a, b) => {
         const aS = occCode ? (a.salaries?.[occCode] || 0) : 0
         const bS = occCode ? (b.salaries?.[occCode] || 0) : 0
         return bS - aS
       })
       .map((c, i) => ({ id: c.id, salaryRank: i + 1 }))
-  }, [cities, salaryFor])
+  }, [cities, salaryFor, housingMode])
 
   // PP-ranked order
   const ppRanked = useMemo(() => {
     return [...cities]
-      .filter(c => purchasingPower(salaryFor(c), c) > 0)
-      .sort((a, b) => purchasingPower(salaryFor(b), b) - purchasingPower(salaryFor(a), a))
-  }, [cities, salaryFor])
+      .filter(c => purchasingPower(salaryFor(c), c, housingMode) > 0)
+      .sort((a, b) => purchasingPower(salaryFor(b), b, housingMode) - purchasingPower(salaryFor(a), a, housingMode))
+  }, [cities, salaryFor, housingMode])
 
   useEffect(() => {
     if (!svgRef.current || !ppRanked.length) return
@@ -46,7 +49,7 @@ export default function Chapter3({ cities, salaryFor }) {
     const innerW = width  - MARGIN.left - MARGIN.right
     const innerH = height - MARGIN.top  - MARGIN.bottom
 
-    const maxPP = d3.max(ppRanked, d => purchasingPower(salaryFor(d), d)) * 1.05
+    const maxPP = d3.max(ppRanked, d => purchasingPower(salaryFor(d), d, housingMode)) * 1.05
     const xScale = d3.scaleLinear().domain([0, maxPP]).range([0, innerW])
     const yScale = d3.scaleBand()
       .domain(ppRanked.map(d => d.short))
@@ -117,12 +120,12 @@ export default function Chapter3({ cities, salaryFor }) {
       })
       .attr('width', 0)
       .transition().duration(1000).delay((_, i) => i * 50).ease(d3.easeCubicInOut)
-      .attr('width', d => entered ? xScale(purchasingPower(salaryFor(d), d)) : 0)
+      .attr('width', d => entered ? xScale(purchasingPower(salaryFor(d), d, housingMode)) : 0)
 
     // Delta badges — only when bars are tall enough to avoid overlap
     if (bh >= 10) {
       groups.append('text')
-        .attr('x', d => xScale(purchasingPower(salaryFor(d), d)) + 4)
+        .attr('x', d => xScale(purchasingPower(salaryFor(d), d, housingMode)) + 4)
         .attr('y', bh / 2 + 3)
         .attr('font-size', Math.min(9, bh - 2))
         .attr('font-family', 'DM Mono, monospace')
@@ -148,7 +151,7 @@ export default function Chapter3({ cities, salaryFor }) {
     // Tooltip
     groups
       .on('mousemove', (event, d) => {
-        const bd = cityBreakdown(salaryFor(d), d)
+        const bd = cityBreakdown(salaryFor(d), d, housingMode)
         setTooltip({
           visible: true,
           x: event.clientX,
@@ -167,7 +170,7 @@ export default function Chapter3({ cities, salaryFor }) {
       })
       .on('mouseleave', () => setTooltip(t => ({ ...t, visible: false })))
 
-  }, [ppRanked, salaryRanked, salaryFor, entered])
+  }, [ppRanked, salaryRanked, salaryFor, entered, housingMode])
 
   return (
     <section id="chapter3" style={{ position: 'relative' }}>

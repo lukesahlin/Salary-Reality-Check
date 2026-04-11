@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
+import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { cityBreakdown, fmt, fmtCompact, homePriceToIncomeRatio, effectiveTaxRate, stateEffectiveRate } from '../lib/calculations.js'
 
 export default function CityModal({ city, salaryFor, ppRank, onClose }) {
+  const [state] = useUserProfile()
+  const housingMode = state.housingMode
+
   // Close on Escape — hook must come before any early return
   useEffect(() => {
     if (!city) return
@@ -13,16 +17,17 @@ export default function CityModal({ city, salaryFor, ppRank, onClose }) {
   if (!city) return null
 
   const gross = salaryFor(city)
-  const bd    = cityBreakdown(gross, city)
+  const bd    = cityBreakdown(gross, city, housingMode)
   const hpRatio = homePriceToIncomeRatio(gross, city)
   const effRate = Math.round(effectiveTaxRate(gross, city) * 100)
+  const housingLabel = housingMode === 'buy' ? 'Mortgage+Tax' : 'Rent'
 
   // Stacked bar segments (% of gross)
   const segs = [
     { label: 'Federal Tax',    value: bd.fedTax,             color: '#e74c3c' },
     { label: 'State + Local',  value: bd.stTax + (bd.locTax||0), color: '#e67e22' },
     { label: 'FICA',           value: bd.fica,               color: '#f39c12' },
-    { label: 'Rent',           value: bd.rent,               color: '#8e44ad' },
+    { label: housingLabel,     value: bd.rent,               color: '#8e44ad' },
     { label: 'Purchasing Power', value: Math.max(0, bd.pp),  color: '#27ae60' },
   ]
   const barTotal = segs.reduce((s, x) => s + x.value, 0)

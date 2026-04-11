@@ -85,6 +85,25 @@ export default function Nav() {
           )}
         </div>
 
+        {/* Rent / Buy toggle */}
+        <div className="hidden sm:flex items-center border border-[rgba(15,15,15,0.15)] overflow-hidden flex-shrink-0">
+          {['rent', 'buy'].map(mode => (
+            <button
+              key={mode}
+              onClick={() => dispatch({ type: 'SET_HOUSING_MODE', payload: mode })}
+              className={`px-3 py-1.5 text-xs font-mono uppercase tracking-widest transition-colors ${
+                state.housingMode === mode
+                  ? 'bg-[#0f0f0f] text-white'
+                  : 'text-[#6b6560] hover:text-[#0f0f0f] bg-white'
+              }`}
+              aria-label={`Switch to ${mode} mode`}
+              aria-pressed={state.housingMode === mode}
+            >
+              {mode === 'rent' ? 'Rent' : 'Buy'}
+            </button>
+          ))}
+        </div>
+
         {/* Compare toggle */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_COMPARE' })}

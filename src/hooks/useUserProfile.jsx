@@ -9,6 +9,7 @@ const initialState = {
   usingCustomSalary: false,
   pinnedCities: [],
   compareOpen: false,
+  housingMode: 'rent',  // 'rent' | 'buy'
 }
 
 function reducer(state, action) {
@@ -26,6 +27,8 @@ function reducer(state, action) {
       return { ...state, pinnedCities: state.pinnedCities.filter(id => id !== action.payload) }
     case 'TOGGLE_COMPARE':
       return { ...state, compareOpen: !state.compareOpen }
+    case 'SET_HOUSING_MODE':
+      return { ...state, housingMode: action.payload }
     default:
       return state
   }

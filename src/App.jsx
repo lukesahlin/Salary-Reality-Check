@@ -8,6 +8,7 @@ import Chapter2 from './components/Chapter2.jsx'
 import Chapter3 from './components/Chapter3.jsx'
 import Chapter4 from './components/Chapter4.jsx'
 import CityCompare from './components/CityCompare.jsx'
+import BreakEven from './components/BreakEven.jsx'
 
 export default function App() {
   const [state, dispatch] = useUserProfile()
@@ -132,6 +133,7 @@ export default function App() {
           salaryFor={salaryFor}
           occupation={state.occupation}
         />
+        <BreakEven cities={cities} />
       </main>
 
       <CityCompare cities={cities} salaryFor={salaryFor} />

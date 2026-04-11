@@ -249,6 +249,35 @@ export function localTax(grossIncome, localTaxRate) {
   return Math.round(grossIncome * (localTaxRate || 0))
 }
 
+// ── HOUSING COST ─────────────────────────────────────────────────────────────
+// 30-year fixed rate mortgage (2025 market rate)
+const MORTGAGE_RATE_30YR = 0.070
+const DOWN_PAYMENT_PCT   = 0.20   // 20% down assumed
+
+// Annual mortgage payment on (1 - DOWN_PAYMENT_PCT) of homePrice
+export function annualMortgage(homePrice) {
+  if (!homePrice) return 0
+  const principal = homePrice * (1 - DOWN_PAYMENT_PCT)
+  const r = MORTGAGE_RATE_30YR / 12
+  const n = 360
+  const monthly = principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
+  return Math.round(monthly * 12)
+}
+
+// Annual property tax estimate (1.1% of home value, national avg)
+export function annualPropertyTax(homePrice) {
+  return Math.round((homePrice || 0) * 0.011)
+}
+
+// Total annual housing cost — rent or buy
+// mode: 'rent' | 'buy'
+export function annualHousingCost(city, mode = 'rent') {
+  if (mode === 'buy') {
+    return annualMortgage(city.medianHomePrice) + annualPropertyTax(city.medianHomePrice)
+  }
+  return city.medianRent1BR
+}
+
 // FICA (Social Security + Medicare): 7.65% up to SS wage base
 export function ficaTax(grossIncome) {
   const ssTax = Math.min(grossIncome, 168600) * 0.062
@@ -271,18 +300,18 @@ export function afterTaxIncome(grossIncome, city) {
   return grossIncome - totalTax(grossIncome, city)
 }
 
-// RENT BURDEN (annual)
-export function rentBurden(city) {
-  return city.medianRent1BR // already annual in schema
+// HOUSING BURDEN (annual) — rent or mortgage+tax
+export function rentBurden(city, mode = 'rent') {
+  return annualHousingCost(city, mode)
 }
 
 // COST OF LIVING ADJUSTED RESIDUAL
-// residualIncome = afterTax - rent, then adjusted for non-rent CoL
-export function purchasingPower(grossIncome, city) {
+// residualIncome = afterTax - housing, then adjusted for non-housing CoL
+export function purchasingPower(grossIncome, city, mode = 'rent') {
   const aTax = afterTaxIncome(grossIncome, city)
-  const rent = rentBurden(city)
-  const residual = aTax - rent
-  // Non-rent CoL: treat 60% of colIndex as the relevant multiplier for remaining spend
+  const housing = annualHousingCost(city, mode)
+  const residual = aTax - housing
+  // Non-housing CoL: treat 60% of colIndex as the relevant multiplier for remaining spend
   const nonRentColMultiplier = 1 / (1 + (city.colIndex / 100 - 1) * 0.6)
   return Math.round(residual * nonRentColMultiplier)
 }
@@ -299,18 +328,34 @@ export function effectiveTaxRate(grossIncome, city) {
 }
 
 // FULL BREAKDOWN for a city (used in tooltips and compare panel)
-export function cityBreakdown(grossIncome, city) {
+// mode: 'rent' | 'buy'
+export function cityBreakdown(grossIncome, city, mode = 'rent') {
   const gross = grossIncome
   const fedTax = federalTax(gross)
   const stTax = stateTax(gross, city.state)
   const locTax = localTax(gross, city.localTaxRate)
   const fica = ficaTax(gross)
   const aTax = gross - fedTax - stTax - locTax - fica
-  const rent = rentBurden(city)
+  const rent = annualHousingCost(city, mode)
   const residual = aTax - rent
-  const pp = purchasingPower(gross, city)
+  const pp = purchasingPower(gross, city, mode)
   const hpRatio = homePriceToIncomeRatio(gross, city)
   return { gross, fedTax, stTax, locTax, fica, aTax, rent, residual, pp, hpRatio }
+}
+
+// BREAK-EVEN SALARY: find gross income in destCity that yields the same
+// purchasing power as sourcePP. Returns null if unachievable below $2M.
+export function breakEvenSalary(sourcePP, destCity, mode = 'rent') {
+  if (sourcePP <= 0) return null
+  let lo = 0, hi = 2_000_000
+  // Quick check: is $2M enough?
+  if (purchasingPower(hi, destCity, mode) < sourcePP) return null
+  for (let i = 0; i < 64; i++) {
+    const mid = (lo + hi) / 2
+    if (purchasingPower(mid, destCity, mode) < sourcePP) lo = mid
+    else hi = mid
+  }
+  return Math.round(hi / 100) * 100  // round to nearest $100
 }
 
 // FORMAT helper

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useUserProfile } from '../hooks/useUserProfile.jsx'
 import { rankCities } from '../lib/scoring.js'
 import ResultCard from './ResultCard.jsx'
 import CityModal from './CityModal.jsx'
@@ -6,7 +7,9 @@ import CityModal from './CityModal.jsx'
 export default function Chapter4({ cities, salaryFor, occupation }) {
   const [search, setSearch] = useState('')
   const [selectedCity, setSelectedCity] = useState(null)
-  const ranked = useMemo(() => rankCities(salaryFor, cities), [cities, salaryFor])
+  const [state] = useUserProfile()
+  const housingMode = state.housingMode
+  const ranked = useMemo(() => rankCities(salaryFor, cities, housingMode), [cities, salaryFor, housingMode])
 
   // Top city by gross salary for the selected occupation
   const occCode = occupation?.code
